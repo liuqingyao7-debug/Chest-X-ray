@@ -1,0 +1,47 @@
+method: nnunet
+source:
+  repository: https://github.com/MIC-DKFZ/nnUNet
+  commit: 7bb926124ce58a611fa53d3510c714726c800031
+  version: 2.8.1
+environment: /mnt/cv_data/users/seven/envs/nnunet
+configuration: 2d
+plans: nnUNetPlans
+datasets:
+  QaTa-COV19: Dataset501_QaTa
+  MosMedDataPlus: Dataset502_MosMed
+data:
+  prepared_size:
+  - 224
+  - 224
+  input_channels: 3
+  normalization: planned per-channel ZScoreNormalization
+  split: fixed LViT train/validation split
+  fold: 0
+model:
+  architecture: planned PlainConvUNet
+  pretrained: false
+  deep_supervision: true
+training:
+  seeds:
+  - 1001
+  - 1002
+  - 1003
+  batch_size: 65
+  max_epochs: 1000
+  loss: native DC_and_CE_loss with deep supervision
+  optimizer:
+    name: SGD
+    learning_rate: 0.01
+    momentum: 0.99
+    nesterov: true
+    weight_decay: 3.0e-05
+  scheduler: PolyLRScheduler
+  augmentation: native nnUNetTrainer 2D training transforms
+validation:
+  required_checkpoint_metric: mean_per_case_foreground_dice
+  checkpoint_selection_implementation: nnUNetTrainerPhase0FullVal.on_validation_epoch_end
+  selected_checkpoint: checkpoint_best_fullval.safetensors
+  foreground_threshold: 0.5
+  empty_prediction_and_target_dice: 1.0
+status: setup_checks_passed
+trainer_class: nnUNetTrainerPhase0FullVal

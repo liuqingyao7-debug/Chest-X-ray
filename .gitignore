@@ -1,0 +1,22 @@
+
+# Datasets and experiment artifacts
+/datasets/
+/data/
+/runs/
+/outputs/
+/logs/
+/pretrained/
+/external/
+/results/phase0_smoke/
+/results/phase0_evaluation/
+
+# Python caches, local environments, and model weights
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.npz

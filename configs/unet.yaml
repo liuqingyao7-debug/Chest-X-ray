@@ -1,0 +1,66 @@
+method: unet
+source:
+  repository: https://github.com/HUANGLIZI/LViT
+  commit: ba90775ead37d6f445f65ce83d1a0be64157f76f
+  model_file: external/LViT/nets/UNet.py
+  model_class: UNet
+data:
+  root: datasets/processed
+  datasets:
+  - QaTa-COV19
+  - MosMedDataPlus
+  image_size:
+  - 224
+  - 224
+  input_channels: 3
+  mask_values:
+  - 0
+  - 1
+  image_scaling: divide_by_255
+model:
+  output_channels: 1
+  output_type: probabilities
+  pretrained: false
+training:
+  seeds:
+  - 1001
+  - 1002
+  - 1003
+  batch_size: 2
+  max_epochs: 2000
+  early_stopping_patience: 50
+  loss:
+    name: WeightedDiceBCE
+    implementation: external/LViT/utils.py
+    dice_weight: 0.5
+    BCE_weight: 0.5
+  optimizer:
+    name: Adam
+    learning_rate: 0.0003
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.0
+  scheduler:
+    name: CosineAnnealingWarmRestarts
+    implementation: external/LViT/utils.py
+    T_0: 10
+    T_mult: 1
+    eta_min: 0.0001
+    step_unit: epoch
+  augmentation:
+    implementation: src/phase0_dataset.py
+    rotate90_and_flip_probability: 0.5
+    arbitrary_rotation_probability: 0.25
+    unchanged_probability: 0.25
+    rotation_degrees:
+    - -20
+    - 19
+    interpolation_order: 0
+validation:
+  checkpoint_metric: mean_per_case_foreground_dice
+  checkpoint_mode: max
+  threshold: 0.5
+  empty_prediction_and_target_dice: 1.0
+status: setup_checks_passed

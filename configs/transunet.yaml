@@ -1,0 +1,62 @@
+method: transunet
+source:
+  repository: https://github.com/Beckschen/TransUNet
+  commit: 02ef0010b36eb8328b5e689eadaf613602edf9b8
+data:
+  root: datasets/processed
+  datasets:
+  - QaTa-COV19
+  - MosMedDataPlus
+  image_size:
+  - 224
+  - 224
+  input_channels: 3
+  image_scaling: divide_by_255
+  mask_values:
+  - 0
+  - 1
+model:
+  configuration: R50-ViT-B_16
+  num_classes: 2
+  n_skip: 3
+  patches_grid:
+  - 14
+  - 14
+  output_type: logits
+  pretrained_path: pretrained/R50+ViT-B_16.npz
+training:
+  seeds:
+  - 1001
+  - 1002
+  - 1003
+  batch_size: 24
+  max_epochs: 150
+  loss:
+    cross_entropy_weight: 0.5
+    dice_weight: 0.5
+    dice_implementation: external/TransUNet/utils.py
+    dice_softmax: true
+  optimizer:
+    name: SGD
+    learning_rate: 0.01
+    momentum: 0.9
+    weight_decay: 0.0001
+  scheduler:
+    name: polynomial
+    power: 0.9
+    step_unit: iteration
+    total_iterations: max_epochs_times_training_loader_length
+  augmentation:
+    rotate90_and_flip_probability: 0.5
+    arbitrary_rotation_probability: 0.25
+    unchanged_probability: 0.25
+    rotation_degrees:
+    - -20
+    - 19
+    interpolation_order: 0
+validation:
+  checkpoint_metric: mean_per_case_foreground_dice
+  checkpoint_mode: max
+  foreground_threshold: 0.5
+  empty_prediction_and_target_dice: 1.0
+status: setup_checks_passed
